@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Kreasi: Seni Rupa 2 Dimensi (Fase F)</title>
+    <style>
+        /* Pengaturan Layar Penuh & Bebas Scrolling 16:9 */
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0f172a; /* Warna latar belakang gelap */
+            display: flex;
+            justify-content: center; align-items: center; overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .screen-16-9 {
+            position: relative;
+            width: 100vw; max-width: 177.78vh; /* 16/9 = 1.7778 */
+            height: 56.25vw; max-height: 100vh; /* 9/16 = 0.5625 */
+            background-color: #f8fafc;
+            box-shadow: 0 0 30px rgba(0,0,0,0.9);
+            display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 12px;
+        }
+
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #1e293b; /* Warna latar splash screen yang serasi */
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 1000; /* Selalu di atas */
+            transition: opacity 0.8s ease-in-out;
+            color: #f8fafc;
+        }
+
+        .splash-logo {
+            width: 30vh; /* Sesuaikan ukuran logo */
+            height: auto;
+            margin-bottom: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .loading-container {
+            width: 40%;
+            height: 10px;
+            background-color: #334155;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            display: none; /* Sembunyikan awalnya */
+        }
+
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+            border-radius: 5px;
+            transition: width 0.1s linear;
+        }
+
+        .loading-text {
+            font-size: 2vh;
+            color: #cbd5e1;
+            margin-bottom: 30px;
+            display: none; /* Sembunyikan awalnya */
+        }
+
+        .btn-mulai {
+            padding: 1.5vh 4vh;
+            font-size: 2.5vh;
+            font-weight: bold;
+            color: #1e293b;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-mulai:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.6);
+        }
+
+        /* Header & Navigasi */
+        header {
+            background-color: #1e293b; color: white;
+            padding: 1% 2%; display: flex; justify-content: space-between;
+            align-items: center; height: 10%;
+        }
+        
+        h1 { margin: 0; font-size: 2.2vh; letter-spacing: 1px; color: #f8fafc; }
+
+        .nav-tabs { display: flex; gap: 8px; height: 100%; align-items: center; }
+        
+        button.tab-btn {
+            padding: 1vh 2vh; font-size: 1.8vh; font-weight: 600;
+            border: none; border-radius: 6px; cursor: pointer;
+            transition: all 0.2s; background-color: #334155; color: #cbd5e1;
+        }
+        
+        button.tab-btn:hover { background-color: #475569; color: white; transform: translateY(-2px); }
+        button.tab-btn.active { background-color: #3b82f6; color: white; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+        
+        .btn-reset { 
+            background-color: #ef4444; color: white; 
+            padding: 1vh 2vh; font-size: 1.8vh; font-weight: 600;
+            border: none; border-radius: 6px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-reset:hover { background-color: #dc2828; transform: translateY(-2px); }
+
+        /* Area Konten */
+        .content-area {
+            flex-grow: 1; padding: 4%; position: relative;
+            background-color: #f1f5f9;
+        }
+
+        .tab-content {
+            display: none; height: 100%; width: 100%;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tipografi Konten */
+        h2 { color: #1e293b; font-size: 3.5vh; margin-top: 0; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; display: inline-block; }
+        p, li { font-size: 2.2vh; color: #475569; line-height: 1.7; }
+        ul, ol { padding-left: 25px; }
+
+        /* Khusus Simulasi */
+        .sim-container { display: flex; gap: 30px; height: 80%; margin-top: 20px;}
+        .tools { width: 30%; display: flex; flex-direction: column; gap: 15px; }
+        .tools button {
+            padding: 1.5vh; font-size: 1.8vh; font-weight: bold; border: none; border-radius: 8px;
+            cursor: pointer; background-color: #e2e8f0; color: #1e293b; transition: all 0.2s;
+            text-align: left; padding-left: 20px;
+        }
+        .tools button:hover { background-color: #cbd5e1; transform: translateX(5px); }
+        
+        .canvas-area {
+            width: 70%; background: white; border: 2px dashed #94a3b8;
+            border-radius: 12px; display: flex; justify-content: center;
+            align-items: center; position: relative; overflow: hidden;
+            transition: all 0.5s ease;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        }
+        .art-object {
+            width: 35vh; height: 35vh; background-color: #e2e8f0;
+            border-radius: 50%; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Efek Simulasi */
+        .effect-aquarel { background: radial-gradient(circle, rgba(56, 189, 248, 0.8) 0%, rgba(255,255,255,0) 70%); border: none; filter: blur(3px); transform: scale(1.1); }
+        .effect-plakat { background: #ef4444; border: 8px solid #991b1b; box-shadow: 15px 15px 0px rgba(0,0,0,0.15); border-radius: 10px; }
+        .effect-pointilis { background: transparent; background-image: radial-gradient(#1e293b 3px, transparent 3px); background-size: 12px 12px; border-radius: 50%; }
+
+        /* LKPD Quiz */
+        .quiz-card { background: white; padding: 3vh; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 5px solid #3b82f6; }
+        .quiz-opts { display: flex; gap: 15px; margin-top: 15px; }
+        .quiz-opts button { 
+            background-color: #f1f5f9; color: #334155; padding: 1vh 2vh; 
+            border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 1.8vh; font-weight: 500;
+        }
+        .quiz-opts button:hover { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+
+        /* --- TAB PENGEMBANG --- */
+        .profil-container {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-top: 30px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .foto-profil {
+            width: 25vh;
+            height: 25vh;
+            border-radius: 50%; /* Membuat foto menjadi lingkaran */
+            object-fit: cover; /* Memastikan foto proporsional di dalam lingkaran */
+            border: 5px solid #e2e8f0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            /* Opsional: Tambahkan filter jika ingin sedikit menyesuaikan warna foto */
+            /* filter: contrast(1.1) brightness(1.05); */
+        }
+
+        .info-profil {
+            flex: 1;
+        }
+
+        .nama-pengembang {
+            font-size: 3.5vh;
+            color: #1e293b;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+
+        .role-pengembang {
+            font-size: 2vh;
+            color: #3b82f6;
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .deskripsi-profil {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .quote-profil {
+             font-style: italic;
+             color: #94a3b8;
+             border-left: 3px solid #cbd5e1;
+             padding-left: 15px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="screen-16-9">
+        
+        <!-- SPLASH SCREEN -->
+        <div id="splash-screen">
+            <!-- Asumsi file my_custom_app_icon.png berada di folder yang sama dengan file HTML ini -->
+            <img src="my_custom_app_icon.png" alt="Logo Ruang Kreasi" class="splash-logo">
+            
+            <div class="loading-text" id="loading-text">Memuat... 0%</div>
+            <div class="loading-container" id="loading-container">
+                <div class="loading-bar" id="loading-bar"></div>
+            </div>
+            
+            <button class="btn-mulai" id="btn-mulai" onclick="mulaiAplikasi()">MULAI</button>
+            <p style="font-size: 1.5vh; color: #94a3b8; margin-top: 20px; opacity: 0.8;">🔊 Efek Suara Aktif</p>
+        </div>
+
+        <header>
+            <h1>🎨 RUANG KREASI: Seni Rupa 2D (Fase F)</h1>
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="openTab('teori', this)">📚 Teori</button>
+                <button class="tab-btn" onclick="openTab('prosedur', this)">📋 Prosedur</button>
+                <button class="tab-btn" onclick="openTab('simulasi', this)">🖌️ Simulasi</button>
+                <button class="tab-btn" onclick="openTab('lkpd', this)">📝 LKPD</button>
+                <button class="tab-btn" onclick="openTab('pengembang', this)">👨‍🏫 Pengembang</button>
+                <button class="btn-reset" onclick="resetApp()">🔄 Reset</button>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <!-- TAB TEORI -->
+            <div id="teori" class="tab-content active">
+                <h2>Teknik Berkarya Seni Rupa 2 Dimensi</h2>
+                <p>Dalam fase F, peserta didik diharapkan mampu mengeksplorasi teknik secara mendalam untuk menyampaikan gagasan visual. Berikut adalah teknik utama:</p>
+                <ul>
+                    <li><strong>Teknik Aquarel:</strong> Sapuan warna tipis dan transparan menggunakan cat air. Menghasilkan kesan ringan dan tembus pandang.</li>
+                    <li><strong>Teknik Plakat:</strong> Sapuan warna tebal dan menutup (opaque) menggunakan cat poster atau akrilik. Warnanya pekat dan tegas.</li>
+                    <li><strong>Teknik Pointilis:</strong> Pembentukan objek menggunakan susunan titik-titik warna. Membutuhkan ketelitian tinggi.</li>
+                    <li><strong>Teknik Arsir & Dusel:</strong> Penggunaan garis menyilang (arsir) atau gosokan (dusel) untuk efek gelap-terang pada pensil, arang, atau konte.</li>
+                </ul>
+            </div>
+
+            <!-- TAB PROSEDUR -->
+            <div id="prosedur" class="tab-content">
+                <h2>Prosedur Berkarya</h2>
+                <p>Langkah-langkah sistematis yang dilakukan seniman dalam menciptakan karya 2 Dimensi:</p>
+                <ol>
+                    <li><strong>Pencarian Gagasan (Eksplorasi):</strong> Menemukan ide, tema, atau pesan yang ingin disampaikan. Bisa dari pengamatan atau imajinasi.</li>
+                    <li><strong>Pembuatan Sketsa:</strong> Merancang komposisi visual dasar di atas kertas atau kanvas. Menentukan proporsi dan letak objek.</li>
+                    <li><strong>Penentuan Teknik & Bahan:</strong> Memilih media yang paling mendukung karakter pesan.</li>
+                    <li><strong>Eksekusi (Proses Berkarya):</strong> Menerapkan pigmen/warna pada bidang gambar sesuai teknik yang dipilih, dari warna dasar hingga detail.</li>
+                    <li><strong>Finishing (Penyelesaian):</strong> Detail akhir, merapikan tepi, pemberian vernis pelindung (jika perlu), dan penyajian karya.</li>
+                </ol>
+            </div>
+
+            <!-- TAB SIMULASI -->
+            <div id="simulasi" class="tab-content">
+                <h2>Simulasi Teknik Pewarnaan</h2>
+                <div class="sim-container">
+                    <div class="tools">
+                        <p style="margin-top:0;">Pilih teknik untuk diterapkan pada objek di kanvas:</p>
+                        <button onclick="applyEffect('aquarel')">💧 Terapkan Aquarel</button>
+                        <button onclick="applyEffect('plakat')">🎨 Terapkan Plakat</button>
+                        <button onclick="applyEffect('pointilis')">✍️ Terapkan Pointilis</button>
+                        <div style="flex-grow:1;"></div>
+                        <button onclick="applyEffect('reset')" style="background-color: #ef4444; color: white; text-align: center; padding-left: 0;">🗑️ Bersihkan Kanvas</button>
+                    </div>
+                    <div class="canvas-area">
+                        <div id="artObject" class="art-object"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB LKPD -->
+            <div id="lkpd" class="tab-content">
+                <h2>Lembar Kerja Peserta Didik (LKPD)</h2>
+                
+                <div class="quiz-card">
+                    <p><strong>1.</strong> Teknik menggambar yang menggunakan sapuan cat air yang tipis sehingga menghasilkan warna yang transparan dan tembus pandang disebut...</p>
+                    <div class="quiz-opts">
+                        <button onclick="cekJawaban(this, false)">A. Plakat</button>
+                        <button onclick="cekJawaban(this, true)">B. Aquarel</button>
+                        <button onclick="cekJawaban(this, false)">C. Dusel</button>
+                        <button onclick="cekJawaban(this, false)">D. Pointilis</button>
+                    </div>
+                </div>
+
+                <div class="quiz-card">
+                    <p><strong>2.</strong> Mengapa tahap "Pembuatan Sketsa" sangat penting dalam prosedur berkarya seni rupa?</p>
+                    <div class="quiz-opts">
+                        <button onclick="cekJawaban(this, false)">A. Agar warna lukisan menjadi lebih cerah dan tahan lama</button>
+                        <button onclick="cekJawaban(this, false)">B. Untuk mempercepat proses pengeringan cat di atas kanvas</button>
+                        <button onclick="cekJawaban(this, true)">C. Untuk menentukan komposisi dan proporsi objek yang tepat</button>
+                        <button onclick="cekJawaban(this, false)">D. Sebagai tahap akhir sebelum karya diberikan bingkai</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB PENGEMBANG -->
+            <div id="pengembang" class="tab-content">
+                <h2>Profil Pengembang</h2>
+                
+                <div class="profil-container">
+                    <!-- Asumsi file foto pengembang.jpeg berada di folder yang sama -->
+                    <img src="foto pengembang.jpeg" alt="Foto Yuyun Dinidaswati" class="foto-profil">
+                    
+                    <div class="info-profil">
+                        <h3 class="nama-pengembang">YUYUN DINIDASWATI</h3>
+                        <p class="role-pengembang">Pengembang Konten Pembelajaran</p>
+                        
+                        <p class="deskripsi-profil">
+                            Media pembelajaran interaktif <strong>Ruang Kreasi</strong> ini dirancang khusus untuk mendukung proses belajar mengajar Seni Budaya (Seni Rupa) Fase F di tingkat SMA/MA pada Kurikulum Merdeka. Aplikasi ini bertujuan memberikan pengalaman belajar mandiri yang menarik dan menyenangkan.
+                        </p>
+                        
+                        <p class="quote-profil">
+                            "Seni bukan tentang apa yang Anda lihat, tetapi apa yang Anda buat orang lain lihat." - Edgar Degas
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Sistem Efek Suara (Web Audio API) ---
+        // Inisialisasi AudioContext saat tombol mulai diklik untuk mengatasi kebijakan autoplay browser
+        let audioCtx;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            if (type === 'start') {
+                // Suara saat aplikasi dimulai (chord)
+                const osc2 = audioCtx.createOscillator();
+                const osc3 = audioCtx.createOscillator();
+                osc2.connect(gain); osc3.connect(gain);
+                
+                osc.type = 'sine'; osc2.type = 'sine'; osc3.type = 'sine';
+                osc.frequency.value = 523.25; // C5
+                osc2.frequency.value = 659.25; // E5
+                osc3.frequency.value = 783.99; // G5
+                
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+                
+                osc.start(now); osc2.start(now); osc3.start(now);
+                osc.stop(now + 1.5); osc2.stop(now + 1.5); osc3.stop(now + 1.5);
+
+            } else if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+                
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.setValueAtTime(600, now + 0.1);
+                osc.frequency.setValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+                
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(250, now);
+                osc.frequency.linearRampToValueAtTime(200, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            }
+        }
+
+        // --- Logika Splash Screen ---
+        function mulaiAplikasi() {
+            initAudio(); // Inisialisasi audio setelah interaksi user
+            playSound('start'); // Mainkan suara mulai
+            
+            const btnMulai = document.getElementById('btn-mulai');
+            const loadingContainer = document.getElementById('loading-container');
+            const loadingBar = document.getElementById('loading-bar');
+            const loadingText = document.getElementById('loading-text');
+            const splashScreen = document.getElementById('splash-screen');
+
+            // Sembunyikan tombol mulai, tampilkan loading
+            btnMulai.style.display = 'none';
+            loadingContainer.style.display = 'block';
+            loadingText.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 15) + 5; // Naik random 5-20%
+                if (progress > 100) progress = 100;
+                
+                loadingBar.style.width = progress + '%';
+                loadingText.innerText = `Memuat... ${progress}%`;
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        // Transisi menghilang
+                        splashScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            splashScreen.style.display = 'none'; // Hapus dari DOM
+                        }, 800); // Waktu sesuai transisi CSS
+                    }, 500); // Jeda sejenak saat 100%
+                }
+            }, 200); // Update setiap 200ms
+        }
+
+        // --- Navigasi Tab ---
+        function openTab(tabId, btn) {
+            playSound('click');
+            
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // --- Fungsi Simulasi ---
+        function applyEffect(effectName) {
+            playSound('click');
+            const artObj = document.getElementById('artObject');
+            artObj.className = 'art-object'; // Reset kelas
+            if (effectName !== 'reset') {
+                artObj.classList.add('effect-' + effectName);
+            }
+        }
+
+        // --- Fungsi LKPD (Kuis) ---
+        function cekJawaban(btn, isCorrect) {
+            const parent = btn.parentElement;
+            const buttons = parent.querySelectorAll('button');
+            
+            buttons.forEach(b => {
+                b.disabled = true;
+                b.style.opacity = '0.6';
+                b.style.cursor = 'not-allowed';
+            });
+            
+            btn.style.opacity = '1';
+            
+            if (isCorrect) {
+                playSound('success');
+                btn.style.backgroundColor = '#22c55e'; // Hijau
+                btn.style.color = 'white';
+                btn.style.borderColor = '#16a34a';
+                btn.innerHTML += ' ✅';
+            } else {
+                playSound('error');
+                btn.style.backgroundColor = '#ef4444'; // Merah
+                btn.style.color = 'white';
+                btn.style.borderColor = '#dc2626';
+                btn.innerHTML += ' ❌';
+            }
+        }
+
+        // --- Fungsi Reset Keseluruhan ---
+        function resetApp() {
+            playSound('click');
+            
+            // Reset Simulasi
+            document.getElementById('artObject').className = 'art-object';
+            
+            // Reset LKPD
+            const quizButtons = document.querySelectorAll('.quiz-opts button');
+            quizButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.backgroundColor = '';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+                btn.innerHTML = btn.innerHTML.replace(' ✅', '').replace(' ❌', '');
+            });
+            
+            // Kembali ke tab Teori
+            openTab('teori', document.querySelector('.tab-btn'));
+        }
+    </script>
+</body>
+</html>
